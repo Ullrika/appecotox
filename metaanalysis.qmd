@@ -1,0 +1,80 @@
+---
+title: "student"
+format: html
+
+---
+
+```{r} 
+#| warning: false
+#| echo: false
+  
+# Only do the first time 
+install.packages(readxl)
+install.packages(metafor)
+
+# load libraries
+library(readxl)
+
+library(metafor)
+
+```
+
+```{r}
+# Read in data
+data <- read_excel("sleep_student.xlsx", sheet = "SOL")
+```
+
+
+```{r}
+# Calculate standard error, variance and weights
+data$s <- (data$UB-data$LB)/(2*1.96)
+data$v <- data$s^2
+
+
+data$invvar <- 1/data$v
+data$w <- data$invvar/sum(data$invvar)
+
+```
+
+## Fixed effects meta-analysis
+
+```{r}
+fmod = rma(yi=ES,sei=s,data=data,method="FE")
+summary(fmod)
+```
+
+## Forest plot 
+
+```{r}
+forest(fmod,slab=data$Study,showweights = TRUE)
+
+```
+
+## Funnel plot 
+
+```{r}
+funnel(fmod)
+```
+
+# Random effects model meta-analysis 
+
+```{r}
+rmod = rma(yi=ES,sei=s,data=data,method="REML")
+summary(rmod)
+
+```
+## Forest plot
+
+```{r}
+forest(rmod,slab=data$Study,showweights = TRUE)
+
+```
+
+## Funnel plot
+
+
+```{r}
+funnel(rmod,addtau2=TRUE)
+
+```
+
